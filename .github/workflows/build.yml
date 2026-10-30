@@ -1,0 +1,30 @@
+name: Build Native macOS Production Binary
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    runs-on: macos-13
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
+
+      - name: Compile Native Mac Engine
+        run: cargo build --release --features llama
+
+      - name: Strip Binary
+        run: strip target/release/lagi
+
+      - name: Upload Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: lagi-mac
+          path: target/release/lagi
