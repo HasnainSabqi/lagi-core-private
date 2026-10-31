@@ -7,24 +7,24 @@ on:
 
 jobs:
   build-macos:
-    runs-on: macos-13
+    runs-on: macos-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Rust
+      - name: Install Rust Toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: x86_64-apple-darwin
 
-      - name: Compile Native Mac Engine
-        run: cargo build --release --features llama
+      - name: Compile Native Mac Engine (Intel x86_64)
+        run: cargo build --release --target x86_64-apple-darwin --features llama
 
       - name: Strip Binary
-        run: strip target/release/lagi
+        run: strip target/x86_64-apple-darwin/release/lagi
 
       - name: Upload Binary
         uses: actions/upload-artifact@v4
         with:
           name: lagi-mac
-          path: target/release/lagi
+          path: target/x86_64-apple-darwin/release/lagi
