@@ -17,10 +17,13 @@ jobs:
         with:
           targets: x86_64-apple-darwin, aarch64-apple-darwin
 
-      - name: Compile Intel x86_64 Slice
+      - name: Compile Intel x86_64 Slice (Metal OFF for Intel Stability)
+        env:
+          GGML_NO_METAL: "1"
+          CMAKE_ARGS: "-DGGML_METAL=OFF"
         run: cargo build --release --target x86_64-apple-darwin --features llama
 
-      - name: Compile Apple Silicon arm64 Slice
+      - name: Compile Apple Silicon arm64 Slice (Metal ON for M1/M2/M3)
         run: cargo build --release --target aarch64-apple-darwin --features llama
 
       - name: Fuse into Universal 2 Binary (lipo)
