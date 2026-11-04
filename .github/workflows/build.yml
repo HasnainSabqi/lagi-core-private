@@ -1,4 +1,4 @@
-name: Build Native macOS Production Binary
+name: Build Universal macOS Binary (Intel + Apple Silicon)
 
 on:
   push:
@@ -6,25 +6,35 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-macos:
+  build-universal-macos:
     runs-on: macos-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Rust Toolchain
+      - name: Install Rust Targets
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-apple-darwin
+          targets: x86_64-apple-darwin, aarch64-apple-darwin
 
-      - name: Compile Native Mac Engine (Intel x86_64)
+      - name: Compile Intel x86_64 Slice
         run: cargo build --release --target x86_64-apple-darwin --features llama
 
-      - name: Strip Binary
-        run: strip target/x86_64-apple-darwin/release/lagi
+      - name: Compile Apple Silicon arm64 Slice
+        run: cargo build --release --target aarch64-apple-darwin --features llama
 
-      - name: Upload Binary
+      - name: Fuse into Universal 2 Binary (lipo)
+        run: |
+          mkdir -p dist-universal
+          lipo -create -output dist-universal/lagi \
+            target/x86_64-apple-darwin/release/lagi \
+            target/aarch64-apple-darwin/release/lagi
+          strip dist-universal/lagi
+          file dist-universal/lagi
+          ls -lh dist-universal/lagi
+
+      - name: Upload Universal Binary Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: lagi-mac
-          path: target/x86_64-apple-darwin/release/lagi
+          name: lagi-mac-universal
+          path: dist-universal/lagi
