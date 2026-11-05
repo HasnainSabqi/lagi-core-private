@@ -766,8 +766,8 @@ pub mod llama_engine {
 
             let backend = LlamaBackend::init()?;
 
-            let model =
-                LlamaModel::load_from_file(&backend, model_path, &LlamaModelParams::default())?;
+           let model_params = llama_cpp_2::model::params::LlamaModelParams::default().with_n_gpu_layers(0);
+let model = LlamaModel::load_from_file(&backend, model_path, &model_params)?;
 
             // .lbc codex enforcement: tokenize forbidden strings and clamp
             // every constituent token to -100.0 during sampling.
