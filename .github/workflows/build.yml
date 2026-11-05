@@ -8,6 +8,9 @@ on:
 jobs:
   build-universal-macos:
     runs-on: macos-latest
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "12.0"
+      CMAKE_OSX_DEPLOYMENT_TARGET: "12.0"
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -17,13 +20,13 @@ jobs:
         with:
           targets: x86_64-apple-darwin, aarch64-apple-darwin
 
-      - name: Compile Intel x86_64 Slice (Metal OFF for Intel Stability)
+      - name: Compile Intel x86_64 (AVX2 CPU)
         env:
           GGML_NO_METAL: "1"
           CMAKE_ARGS: "-DGGML_METAL=OFF"
         run: cargo build --release --target x86_64-apple-darwin --features llama
 
-      - name: Compile Apple Silicon arm64 Slice (Metal ON for M1/M2/M3)
+      - name: Compile Apple Silicon arm64 (Native Metal for M1/M2/M3)
         run: cargo build --release --target aarch64-apple-darwin --features llama
 
       - name: Fuse into Universal 2 Binary (lipo)
@@ -33,8 +36,6 @@ jobs:
             target/x86_64-apple-darwin/release/lagi \
             target/aarch64-apple-darwin/release/lagi
           strip dist-universal/lagi
-          file dist-universal/lagi
-          ls -lh dist-universal/lagi
 
       - name: Upload Universal Binary Artifact
         uses: actions/upload-artifact@v4
